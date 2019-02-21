@@ -54,38 +54,26 @@ type Link struct {
 	Quality string `json:"quality"`
 }
 
-// Generator returns a channel which produces info updates.
-func Generator(source string, tick <-chan struct{}) <-chan *Nodes {
-	ch := make(chan *Nodes)
-	go func() {
-		for range tick {
-			nodes, err := readNodes(source)
-			if err != nil {
-				fmt.Printf("Error reading nodes: %s", err)
-				continue
-			}
-
-			ch <- nodes
-		}
-	}()
-	return ch
-}
-
-func readNodes(source string) (*Nodes, error) {
-	res, err := http.Get(source)
+// GetNodes will read node information from a HTTP URL.
+func GetNodes(url string) (*Nodes, error) {
+	res, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error connecting to server: %s", err)
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non-ok HTTP status: %d", res.StatusCode)
+	}
+
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can not read response: %s", err)
 	}
 
 	var result Nodes
 	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can not read JSON: %s", err)
 	}
 
 	return &result, nil

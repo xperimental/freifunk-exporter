@@ -69,15 +69,11 @@ func nodesHandler(w http.ResponseWriter, r *http.Request) {
 func TestGenerator(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(nodesHandler))
 
-	tick := make(chan struct{})
-	g := Generator(server.URL, tick)
+	nodes, err := GetNodes(server.URL)
 
-	go func() {
-		tick <- struct{}{}
-		close(tick)
-	}()
-
-	nodes := <-g
+	if err != nil {
+		t.Fatalf("got error %q", err)
+	}
 
 	if nodes == nil {
 		t.Errorf("got nil nodes")

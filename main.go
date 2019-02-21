@@ -28,14 +28,11 @@ func main() {
 		return
 	}
 
-	tick := make(chan struct{})
-	gen := info.Generator(nodesURL, tick)
-
-	log.Println("Starting update loop.")
-	go runLoop(tick, gen)
-
-	log.Println("Trigger first update.")
-	tick <- struct{}{}
+	infoReader := func() (*info.Nodes, error) {
+		return info.GetNodes(nodesURL)
+	}
+	collector := newCollector(infoReader)
+	prometheus.MustRegister(collector)
 
 	http.Handle("/", http.RedirectHandler("/metrics", http.StatusFound))
 	http.Handle("/metrics", prometheus.Handler())
@@ -43,16 +40,5 @@ func main() {
 	log.Printf("Listening on %s...", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func runLoop(tick chan<- struct{}, gen <-chan *info.Nodes) {
-	for {
-		select {
-		case <-time.After(interval):
-			tick <- struct{}{}
-		case nodes := <-gen:
-			updateMetrics(nodes)
-		}
 	}
 }
