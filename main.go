@@ -37,8 +37,10 @@ func main() {
 	log.Println("Trigger first update.")
 	tick <- struct{}{}
 
-	log.Printf("Listening on %s...", addr)
+	http.Handle("/", http.RedirectHandler("/metrics", http.StatusFound))
 	http.Handle("/metrics", prometheus.Handler())
+
+	log.Printf("Listening on %s...", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatal(err)
 	}
