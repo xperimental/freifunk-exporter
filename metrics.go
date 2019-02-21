@@ -18,21 +18,16 @@ var (
 
 type collector struct {
 	readerFunc func() (*info.Nodes, error)
-	linksCount prometheus.Gauge
 }
 
 func newCollector(reader func() (*info.Nodes, error)) *collector {
 	return &collector{
 		readerFunc: reader,
-		linksCount: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: prefix + "link_count_total",
-			Help: "Number of links between nodes",
-		}),
 	}
 }
 
 func (c *collector) Describe(ch chan<- *prometheus.Desc) {
-	c.linksCount.Describe(ch)
+	ch <- clientCountDesc
 }
 
 func (c *collector) Collect(ch chan<- prometheus.Metric) {
@@ -42,17 +37,24 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	c.linksCount.Set(float64(len(nodes.Links)))
-	c.linksCount.Collect(ch)
-
 	c.updateNodes(ch, nodes)
 }
 
 func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes *info.Nodes) {
-	for _, node := range nodes.Nodes {
-		values := []string{node.ID, node.Name, node.Hardware, node.Firmware, node.Community}
+	for _, node := range nodes.List {
+		info := node.Nodeinfo
+		if info == nil {
+			continue
+		}
 
-		m, err := prometheus.NewConstMetric(clientCountDesc, prometheus.GaugeValue, float64(node.Clients), values...)
+		stats := node.Statistics
+		if stats == nil {
+			continue
+		}
+
+		values := []string{info.NodeID, info.Hostname, info.Hardware.Model, info.Software.Firmware.Release, info.System.SiteCode}
+
+		m, err := prometheus.NewConstMetric(clientCountDesc, prometheus.GaugeValue, float64(stats.Clients), values...)
 		if err != nil {
 			log.Printf("Error creating metric: %s", err)
 			continue
