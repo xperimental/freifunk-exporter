@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/xperimental/freifunk-exporter/info"
 )
 
 var addr string
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	tick := make(chan struct{})
-	gen := generator(nodesURL, tick)
+	gen := info.Generator(nodesURL, tick)
 
 	log.Println("Starting update loop.")
 	go runLoop(tick, gen)
@@ -43,7 +44,7 @@ func main() {
 	}
 }
 
-func runLoop(tick chan<- struct{}, gen <-chan *Nodes) {
+func runLoop(tick chan<- struct{}, gen <-chan *info.Nodes) {
 	for {
 		select {
 		case <-time.After(interval):

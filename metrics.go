@@ -1,6 +1,9 @@
 package main
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/xperimental/freifunk-exporter/info"
+)
 
 var (
 	namespace   = "freifunk"
@@ -22,7 +25,7 @@ func init() {
 	prometheus.MustRegister(linksCount)
 }
 
-func updateMetrics(nodes *Nodes) {
+func updateMetrics(nodes *info.Nodes) {
 	for _, node := range nodes.Nodes {
 		values := []string{node.ID, node.Name, node.Hardware, node.Firmware, node.Community}
 		clientCount.WithLabelValues(values...).Set(float64(node.Clients))

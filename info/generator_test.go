@@ -1,4 +1,4 @@
-package main
+package info
 
 import (
 	"net/http"
@@ -70,7 +70,7 @@ func TestGenerator(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(nodesHandler))
 
 	tick := make(chan struct{})
-	g := generator(server.URL, tick)
+	g := Generator(server.URL, tick)
 
 	go func() {
 		tick <- struct{}{}

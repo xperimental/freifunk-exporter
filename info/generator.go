@@ -1,4 +1,4 @@
-package main
+package info
 
 import (
 	"encoding/json"
@@ -54,7 +54,8 @@ type Link struct {
 	Quality string `json:"quality"`
 }
 
-func generator(source string, tick <-chan struct{}) <-chan *Nodes {
+// Generator returns a channel which produces info updates.
+func Generator(source string, tick <-chan struct{}) <-chan *Nodes {
 	ch := make(chan *Nodes)
 	go func() {
 		for range tick {

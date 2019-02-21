@@ -4,15 +4,16 @@ import (
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_model/go"
+	io_prometheus_client "github.com/prometheus/client_model/go"
+	"github.com/xperimental/freifunk-exporter/info"
 )
 
 func TestUpdateLinkMetric(t *testing.T) {
-	nodes := &Nodes{
-		Links: []Link{
-			Link{},
-			Link{},
-			Link{},
+	nodes := &info.Nodes{
+		Links: []info.Link{
+			{},
+			{},
+			{},
 		},
 	}
 
@@ -41,13 +42,13 @@ func TestUpdateLinkMetric(t *testing.T) {
 }
 
 func TestUpdateClientsMetric(t *testing.T) {
-	nodes := &Nodes{
-		Nodes: []Node{
-			Node{
+	nodes := &info.Nodes{
+		Nodes: []info.Node{
+			{
 				ID:      "one",
 				Clients: 10,
 			},
-			Node{
+			{
 				ID:      "two",
 				Clients: 20,
 			},
