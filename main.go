@@ -15,7 +15,7 @@ var nodesURL string
 var interval time.Duration
 
 func init() {
-	flag.StringVar(&addr, "addr", ":8080", "Address to listen on.")
+	flag.StringVar(&addr, "addr", ":9295", "Address to listen on.")
 	flag.StringVar(&nodesURL, "source", "", "URL of nodes.json file.")
 	flag.DurationVar(&interval, "interval", time.Minute*3, "Interval to use for getting updates.")
 }
