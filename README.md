@@ -7,7 +7,7 @@ This is a small program to extract some metrics from a Freifunk network. The too
 First `go get github.com/xperimental/freifunk-exporter` to download the source and compile the executable. Then you can run it like this:
 
 ```bash
-$ freifunk-exporter -source http://host.of.vpn.server/nodes.json
+$ freifunk-exporter --source http://host.of.vpn.server/nodes.json
 ```
 
 ## Running on Raspberry Pi
