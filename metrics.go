@@ -10,10 +10,26 @@ import (
 var (
 	prefix = "freifunk_"
 
+	metaDesc = prometheus.NewDesc(
+		prefix+"router_meta",
+		"Contains labels with metadata about a router. Value is fixed to 1.",
+		[]string{"id", "name", "hardware", "firmware", "community"}, nil)
 	clientCountDesc = prometheus.NewDesc(
 		prefix+"router_client_count_total",
 		"Number of connected clients",
-		[]string{"id", "name", "hardware", "firmware", "community"}, nil)
+		[]string{"id"}, nil)
+	loadAvgDesc = prometheus.NewDesc(
+		prefix+"router_load_avg_5m",
+		"Contains the five minutes average load for a router.",
+		[]string{"id"}, nil)
+	memoryUsageDesc = prometheus.NewDesc(
+		prefix+"router_memory_usage_total",
+		"Router memory usage as a fraction of the total.",
+		[]string{"id"}, nil)
+	rootFsUsageDesc = prometheus.NewDesc(
+		prefix+"router_rootfs_usage_total",
+		"Router root filesystem usage as a fraction of the total.",
+		[]string{"id"}, nil)
 )
 
 type collector struct {
@@ -52,15 +68,27 @@ func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes *info.Nodes) 
 			continue
 		}
 
-		values := []string{info.NodeID, info.Hostname, info.Hardware.Model, info.Software.Firmware.Release, info.System.SiteCode}
+		metaLabels := []string{info.NodeID, info.Hostname, info.Hardware.Model, info.Software.Firmware.Release, info.System.SiteCode}
+		sendMetric(ch, metaDesc, 1.0, metaLabels)
 
-		m, err := prometheus.NewConstMetric(clientCountDesc, prometheus.GaugeValue, float64(stats.Clients), values...)
-		if err != nil {
-			log.Printf("Error creating metric: %s", err)
-			continue
+		idLabel := []string{info.NodeID}
+		sendMetric(ch, clientCountDesc, float64(stats.Clients), idLabel)
+
+		sendMetric(ch, loadAvgDesc, stats.LoadAverage, idLabel)
+		sendMetric(ch, rootFsUsageDesc, stats.RootFsUsage, idLabel)
+
+		if stats.MemoryUsage != nil {
+			sendMetric(ch, memoryUsageDesc, *stats.MemoryUsage, idLabel)
 		}
+	}
+}
 
-		ch <- m
+func sendMetric(ch chan<- prometheus.Metric, desc *prometheus.Desc, value float64, labels []string) {
+	m, err := prometheus.NewConstMetric(desc, prometheus.GaugeValue, value, labels...)
+	if err != nil {
+		log.Printf("Error creating metric %q: %s", desc, err)
+		return
 	}
 
+	ch <- m
 }
