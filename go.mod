@@ -1,5 +1,7 @@
 module github.com/xperimental/freifunk-exporter
 
+go 1.14
+
 require (
 	github.com/FreifunkBremen/yanic v0.0.2
 	github.com/pkg/errors v0.8.1 // indirect
