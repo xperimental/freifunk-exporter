@@ -2,7 +2,7 @@
 
 GO ?= go
 GO_CMD := CGO_ENABLED=0 $(GO)
-GIT_VERSION := $(shell git describe --tags --dirty)
+GIT_VERSION := $(shell git describe --tags --dirty || git rev-parse --short HEAD)
 VERSION := $(GIT_VERSION:v%=%)
 GIT_COMMIT := $(shell git rev-parse HEAD)
 
