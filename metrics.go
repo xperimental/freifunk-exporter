@@ -52,6 +52,8 @@ func newCollector(sourceURL string, cacheDuration time.Duration) *collector {
 	return &collector{
 		sourceURL:     sourceURL,
 		cacheDuration: cacheDuration,
+		lastInfo:      nil,
+		timestamp:     time.Unix(0, 0),
 	}
 }
 
@@ -62,28 +64,38 @@ func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	now := time.Now()
 	if now.Sub(c.timestamp) > c.cacheDuration {
-		info, err := info.GetInfo(c.sourceURL)
-		if err != nil {
-			log.Printf("Error collecting node information: %s", err)
-			return
+		if err := c.updateCache(now); err != nil {
+			log.Printf("Error updating data: %s", err)
 		}
-
-		c.timestamp = now
-		c.lastInfo = info
 	}
 
-	collectorUp := 0.0
-	if c.lastInfo != nil {
-		collectorUp = 1
-	}
-	sendMetric(ch, collectorUpDesc, collectorUp, []string{})
-	sendMetric(ch, collectorTimestampDesc, float64(c.timestamp.Unix()), []string{})
-
+	c.sendCollectorMetrics(ch)
 	if c.lastInfo == nil {
 		return
 	}
 
 	c.updateNodes(ch, c.lastInfo.Nodes)
+}
+
+func (c *collector) updateCache(now time.Time) error {
+	info, err := info.GetInfo(c.sourceURL)
+	if err != nil {
+		return err
+	}
+
+	c.timestamp = now
+	c.lastInfo = info
+	return nil
+}
+
+func (c *collector) sendCollectorMetrics(ch chan<- prometheus.Metric) {
+	collectorUp := 0.0
+	if c.lastInfo != nil {
+		collectorUp = 1
+	}
+
+	sendMetric(ch, collectorUpDesc, collectorUp, []string{})
+	sendMetric(ch, collectorTimestampDesc, float64(c.timestamp.Unix()), []string{})
 }
 
 func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) {
