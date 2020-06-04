@@ -100,6 +100,11 @@ func (c *collector) sendCollectorMetrics(ch chan<- prometheus.Metric) {
 
 func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) {
 	for _, node := range nodes {
+		if node.IsGateway {
+			// skip nodes that are not routers
+			continue
+		}
+
 		metaLabels := []string{node.ID, node.Hostname, node.Model, node.Firmware.Release, node.SiteCode}
 		sendMetric(ch, metaDesc, 1.0, metaLabels)
 
