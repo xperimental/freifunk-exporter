@@ -1,0 +1,89 @@
+{
+  "links": [
+    {
+      "source": "gateway",
+      "type": "vpn",
+      "target_addr": "c0:ff:ee:00:00:01",
+      "source_tq": 0.01,
+      "target_tq": 0.01,
+      "source_addr": "c0:ff:ee:00:00:02",
+      "target": "node1"
+    }
+  ],
+  "nodes": [
+    {
+      "is_gateway": false,
+      "gateway_nexthop": "-",
+      "clients_wifi5": 0,
+      "uptime": "2020-06-02 08:58:34",
+      "node_id": "node1",
+      "clients_other": 0,
+      "memory_usage": 0.013657,
+      "firmware": {
+        "release": "2.2.0",
+        "base": "ffbsee"
+      },
+      "addresses": [
+        "fdef:1701:b5ee:23:c0:ffee"
+      ],
+      "nproc": 1,
+      "autoupdater": {
+        "enabled": true,
+        "branch": "batman5_stable"
+      },
+      "mac": "c0:ff:ee:00:00:01",
+      "hostname": "Router Node",
+      "site_code": "bodensee",
+      "vpn": false,
+      "clients_wifi24": 0,
+      "lastseen": "2020-06-04T13:20:03",
+      "loadavg": 0.02,
+      "gateway": "gw01",
+      "is_online": true,
+      "rootfs_usage": 0.02,
+      "location": {
+        "latitude": 47.8,
+        "longitude": 9.4
+      },
+      "clients": 13,
+      "model": "Raspberry Pi 4 Model B Rev 1.1",
+      "firstseen": "2020-05-28T20:45:03"
+    },
+    {
+      "is_gateway": true,
+      "gateway_nexthop": "-",
+      "clients_wifi5": 0,
+      "uptime": "",
+      "node_id": "gateway",
+      "clients_other": 0,
+      "memory_usage": 0,
+      "firmware": {
+        "release": "server",
+        "base": "-"
+      },
+      "addresses": [],
+      "nproc": 1,
+      "autoupdater": {
+        "enabled": false,
+        "branch": ""
+      },
+      "mac": "c0:ff:ee:00:00:02",
+      "hostname": "gw01",
+      "site_code": "bodensee",
+      "vpn": true,
+      "clients_wifi24": 0,
+      "lastseen": "2020-06-04T13:20:03",
+      "loadavg": 0,
+      "gateway": "",
+      "is_online": true,
+      "rootfs_usage": 0,
+      "location": {},
+      "clients": 0,
+      "model": "no data",
+      "firstseen": "2019-06-21T07:57:57"
+    }
+  ],
+  "meta": {
+    "timestamp": "2020-06-04T13:20:03"
+  }
+}

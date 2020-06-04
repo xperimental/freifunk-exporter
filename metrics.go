@@ -33,12 +33,12 @@ var (
 )
 
 type collector struct {
-	readerFunc func() (*info.Nodes, error)
+	sourceURL string
 }
 
-func newCollector(reader func() (*info.Nodes, error)) *collector {
+func newCollector(sourceURL string) *collector {
 	return &collector{
-		readerFunc: reader,
+		sourceURL: sourceURL,
 	}
 }
 
@@ -47,38 +47,28 @@ func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *collector) Collect(ch chan<- prometheus.Metric) {
-	nodes, err := c.readerFunc()
+	info, err := info.GetInfo(c.sourceURL)
 	if err != nil {
 		log.Printf("Error collecting node information: %s", err)
 		return
 	}
 
-	c.updateNodes(ch, nodes)
+	c.updateNodes(ch, info.Nodes)
 }
 
-func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes *info.Nodes) {
-	for _, node := range nodes.List {
-		info := node.Nodeinfo
-		if info == nil {
-			continue
-		}
-
-		stats := node.Statistics
-		if stats == nil {
-			continue
-		}
-
-		metaLabels := []string{info.NodeID, info.Hostname, info.Hardware.Model, info.Software.Firmware.Release, info.System.SiteCode}
+func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) {
+	for _, node := range nodes {
+		metaLabels := []string{node.ID, node.Hostname, node.Model, node.Firmware.Release, node.SiteCode}
 		sendMetric(ch, metaDesc, 1.0, metaLabels)
 
-		idLabel := []string{info.NodeID}
-		sendMetric(ch, clientCountDesc, float64(stats.Clients), idLabel)
+		idLabel := []string{node.ID}
+		sendMetric(ch, clientCountDesc, float64(node.Clients), idLabel)
 
-		sendMetric(ch, loadAvgDesc, stats.LoadAverage, idLabel)
-		sendMetric(ch, rootFsUsageDesc, stats.RootFsUsage, idLabel)
+		sendMetric(ch, loadAvgDesc, node.LoadAvg, idLabel)
+		sendMetric(ch, rootFsUsageDesc, node.RootfsUsage, idLabel)
 
-		if stats.MemoryUsage != nil {
-			sendMetric(ch, memoryUsageDesc, *stats.MemoryUsage, idLabel)
+		if node.MemoryUsage > 0 {
+			sendMetric(ch, memoryUsageDesc, node.MemoryUsage, idLabel)
 		}
 	}
 }
