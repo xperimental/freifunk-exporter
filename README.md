@@ -1,17 +1,22 @@
 # freifunk-exporter
 
-This is a small program to extract some metrics from a Freifunk network. The tool gets the `nodes.json` from a VPN server, parses it and converts it to metrics readable by a [Prometheus](https://prometheus.io) server.
+This is a small program to extract some metrics from a Freifunk network. It gathers the data from the JSON file typically used to also populate the Meshviewer map. The data is then made available in a format readable by a [Prometheus](https://prometheus.io) server.
 
 ## Usage
 
-First `go get github.com/xperimental/freifunk-exporter` to download the source and compile the executable. Then you can run it like this:
+To compile the tool, first check that you have a recent Go installation (1.14 at the time of this writing). Then clone the repository and run `make` which will run the tests and compile the binary.
 
-```bash
-$ freifunk-exporter --source http://host.of.vpn.server/nodes.json
+The tool accepts a few parameters, only the `--source-url` is required:
+
+```plain
+Usage of freifunk-exporter:
+      --addr string               Address to listen on. (default ":9295")
+      --cache-interval duration   Interval for local caching of Meshviewer data. (default 3m0s)
+      --source-url string         URL to Meshviewer JSON file.
 ```
 
-## Running on Raspberry Pi
+So, for example to get the metrics for Freifunk Bodensee run:
 
-If you want to run this tool on a Raspberry Pi you can use the included `build-arm.sh` to build a statically compiled executable for ARMv6.
-
-This executable will, of course, not only work on RPi, but on any ARMv6 device.
+```bash
+freifunk-exporter --source-url https://meta.ffbsee.net/data/meshviewer.json
+```
