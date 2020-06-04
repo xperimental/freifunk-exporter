@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/xperimental/freifunk-exporter/info"
@@ -10,6 +11,14 @@ import (
 var (
 	prefix = "freifunk_"
 
+	collectorUpDesc = prometheus.NewDesc(
+		prefix+"_collector_up",
+		"Is set to 1 when the collector is able to get information.",
+		[]string{}, nil)
+	collectorTimestampDesc = prometheus.NewDesc(
+		prefix+"info_timestamp",
+		"Contains the timestamp of the currently cached information.",
+		[]string{}, nil)
 	metaDesc = prometheus.NewDesc(
 		prefix+"router_meta",
 		"Contains labels with metadata about a router. Value is fixed to 1.",
@@ -33,12 +42,16 @@ var (
 )
 
 type collector struct {
-	sourceURL string
+	sourceURL     string
+	cacheDuration time.Duration
+	lastInfo      *info.Meshinfo
+	timestamp     time.Time
 }
 
-func newCollector(sourceURL string) *collector {
+func newCollector(sourceURL string, cacheDuration time.Duration) *collector {
 	return &collector{
-		sourceURL: sourceURL,
+		sourceURL:     sourceURL,
+		cacheDuration: cacheDuration,
 	}
 }
 
@@ -47,13 +60,30 @@ func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *collector) Collect(ch chan<- prometheus.Metric) {
-	info, err := info.GetInfo(c.sourceURL)
-	if err != nil {
-		log.Printf("Error collecting node information: %s", err)
+	now := time.Now()
+	if now.Sub(c.timestamp) > c.cacheDuration {
+		info, err := info.GetInfo(c.sourceURL)
+		if err != nil {
+			log.Printf("Error collecting node information: %s", err)
+			return
+		}
+
+		c.timestamp = now
+		c.lastInfo = info
+	}
+
+	collectorUp := 0.0
+	if c.lastInfo != nil {
+		collectorUp = 1
+	}
+	sendMetric(ch, collectorUpDesc, collectorUp, []string{})
+	sendMetric(ch, collectorTimestampDesc, float64(c.timestamp.Unix()), []string{})
+
+	if c.lastInfo == nil {
 		return
 	}
 
-	c.updateNodes(ch, info.Nodes)
+	c.updateNodes(ch, c.lastInfo.Nodes)
 }
 
 func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) {

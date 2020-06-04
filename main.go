@@ -10,14 +10,16 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var addr string
-var sourceURL string
-var interval time.Duration
+var (
+	addr          string
+	sourceURL     string
+	cacheInterval time.Duration
+)
 
 func init() {
 	pflag.StringVar(&addr, "addr", ":9295", "Address to listen on.")
-	pflag.StringVar(&sourceURL, "source", "", "URL of nodes.json file.")
-	pflag.DurationVar(&interval, "interval", time.Minute*3, "Interval to use for getting updates.")
+	pflag.StringVar(&sourceURL, "source-url", "", "URL to Meshviewer JSON file.")
+	pflag.DurationVar(&cacheInterval, "cache-interval", time.Minute*3, "Interval for local caching of Meshviewer data.")
 }
 
 func main() {
@@ -28,7 +30,7 @@ func main() {
 		return
 	}
 
-	collector := newCollector(sourceURL)
+	collector := newCollector(sourceURL, cacheInterval)
 	prometheus.MustRegister(collector)
 
 	http.Handle("/", http.RedirectHandler("/metrics", http.StatusFound))
