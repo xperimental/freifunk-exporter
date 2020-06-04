@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 )
 
@@ -31,7 +32,7 @@ func main() {
 	prometheus.MustRegister(collector)
 
 	http.Handle("/", http.RedirectHandler("/metrics", http.StatusFound))
-	http.Handle("/metrics", prometheus.Handler())
+	http.Handle("/metrics", promhttp.Handler())
 
 	log.Printf("Listening on %s...", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
