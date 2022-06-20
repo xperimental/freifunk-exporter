@@ -27,6 +27,14 @@ var (
 		prefix+"router_client_count_total",
 		"Number of connected clients",
 		[]string{"id"}, nil)
+	client24CountDesc = prometheus.NewDesc(
+		prefix+"router_client24_count_total",
+		"Number of 2.4GHz connected clients",
+		[]string{"id"}, nil)
+	client5CountDesc = prometheus.NewDesc(
+		prefix+"router_client5_count_total",
+		"Number of 5GHz connected clients",
+		[]string{"id"}, nil)
 	loadAvgDesc = prometheus.NewDesc(
 		prefix+"router_load_avg_5m",
 		"Contains the five minutes average load for a router.",
@@ -110,6 +118,8 @@ func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) 
 
 		idLabel := []string{node.ID}
 		sendMetric(ch, clientCountDesc, float64(node.Clients), idLabel)
+		sendMetric(ch, client24CountDesc, float64(node.ClientsWifi24), idLabel)
+		sendMetric(ch, client5CountDesc, float64(node.ClientsWifi5), idLabel)
 
 		sendMetric(ch, loadAvgDesc, node.LoadAvg, idLabel)
 		sendMetric(ch, rootFsUsageDesc, node.RootfsUsage, idLabel)
