@@ -1,4 +1,6 @@
-FROM golang:1.15.6 AS builder
+FROM golang:1.19-alpine AS builder
+
+RUN apk add make git
 
 WORKDIR /build
 
