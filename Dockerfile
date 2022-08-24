@@ -1,4 +1,6 @@
-FROM golang:1.15.6 AS builder
+FROM golang:1.19-alpine AS builder
+
+RUN apk add make git bash
 
 WORKDIR /build
 
@@ -7,7 +9,7 @@ RUN go mod download
 RUN go mod verify
 
 COPY . /build/
-RUN make
+RUN make build-binary
 
 FROM busybox
 LABEL maintainer="Robert Jacob <xperimental@solidproject.de>"

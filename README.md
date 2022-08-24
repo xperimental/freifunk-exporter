@@ -4,7 +4,7 @@ This is a small program to extract some metrics from a Freifunk network. It gath
 
 ## Usage
 
-To compile the tool, first check that you have a recent Go installation (1.14 at the time of this writing). Then clone the repository and run `make` which will run the tests and compile the binary.
+To compile the tool, first check that you have a recent Go installation (1.19 at the time of this writing). Then clone the repository and run `make` which will run the tests and compile the binary.
 
 The tool accepts a few parameters, only the `--source-url` is required:
 
