@@ -1,6 +1,6 @@
 FROM golang:1.19-alpine AS builder
 
-RUN apk add make git
+RUN apk add make git bash
 
 WORKDIR /build
 
