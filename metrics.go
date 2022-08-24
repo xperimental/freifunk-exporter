@@ -8,6 +8,13 @@ import (
 	"github.com/xperimental/freifunk-exporter/info"
 )
 
+const (
+	clientConnectionWifi24  = "wifi24"
+	clientConnectionWifi5   = "wifi5"
+	clientConnectionOther   = "other"
+	clientConnectionUnknown = "unknown"
+)
+
 var (
 	prefix = "freifunk_"
 
@@ -26,15 +33,7 @@ var (
 	clientCountDesc = prometheus.NewDesc(
 		prefix+"router_client_count_total",
 		"Number of connected clients",
-		[]string{"id"}, nil)
-	client24CountDesc = prometheus.NewDesc(
-		prefix+"router_client24_count_total",
-		"Number of 2.4GHz connected clients",
-		[]string{"id"}, nil)
-	client5CountDesc = prometheus.NewDesc(
-		prefix+"router_client5_count_total",
-		"Number of 5GHz connected clients",
-		[]string{"id"}, nil)
+		[]string{"id", "connection"}, nil)
 	loadAvgDesc = prometheus.NewDesc(
 		prefix+"router_load_avg_5m",
 		"Contains the five minutes average load for a router.",
@@ -116,11 +115,17 @@ func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) 
 		metaLabels := []string{node.ID, node.Hostname, node.Model, node.Firmware.Release, node.SiteCode}
 		sendMetric(ch, metaDesc, 1.0, metaLabels)
 
-		idLabel := []string{node.ID}
-		sendMetric(ch, clientCountDesc, float64(node.Clients), idLabel)
-		sendMetric(ch, client24CountDesc, float64(node.ClientsWifi24), idLabel)
-		sendMetric(ch, client5CountDesc, float64(node.ClientsWifi5), idLabel)
+		clientsUnknown := float64(node.Clients - node.ClientsWifi24 - node.ClientsWifi5 - node.ClientsOther)
+		if clientsUnknown < 0 {
+			clientsUnknown = 0
+		}
+		sendMetric(ch, clientCountDesc, clientsUnknown, []string{node.ID, clientConnectionUnknown})
 
+		sendMetric(ch, clientCountDesc, float64(node.ClientsWifi24), []string{node.ID, clientConnectionWifi24})
+		sendMetric(ch, clientCountDesc, float64(node.ClientsWifi5), []string{node.ID, clientConnectionWifi5})
+		sendMetric(ch, clientCountDesc, float64(node.ClientsOther), []string{node.ID, clientConnectionOther})
+
+		idLabel := []string{node.ID}
 		sendMetric(ch, loadAvgDesc, node.LoadAvg, idLabel)
 		sendMetric(ch, rootFsUsageDesc, node.RootfsUsage, idLabel)
 
