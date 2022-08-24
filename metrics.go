@@ -12,7 +12,7 @@ var (
 	prefix = "freifunk_"
 
 	collectorUpDesc = prometheus.NewDesc(
-		prefix+"_collector_up",
+		prefix+"collector_up",
 		"Is set to 1 when the collector is able to get information.",
 		[]string{}, nil)
 	collectorTimestampDesc = prometheus.NewDesc(
