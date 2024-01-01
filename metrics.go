@@ -121,9 +121,11 @@ func (c *collector) updateNodes(ch chan<- prometheus.Metric, nodes []info.Node) 
 		}
 		sendMetric(ch, clientCountDesc, clientsUnknown, []string{node.ID, clientConnectionUnknown})
 
-		sendMetric(ch, clientCountDesc, float64(node.ClientsWifi24), []string{node.ID, clientConnectionWifi24})
-		sendMetric(ch, clientCountDesc, float64(node.ClientsWifi5), []string{node.ID, clientConnectionWifi5})
-		sendMetric(ch, clientCountDesc, float64(node.ClientsOther), []string{node.ID, clientConnectionOther})
+		if node.ClientsWifi24 > 0 || node.ClientsWifi5 > 0 || node.ClientsOther > 0 {
+			sendMetric(ch, clientCountDesc, float64(node.ClientsWifi24), []string{node.ID, clientConnectionWifi24})
+			sendMetric(ch, clientCountDesc, float64(node.ClientsWifi5), []string{node.ID, clientConnectionWifi5})
+			sendMetric(ch, clientCountDesc, float64(node.ClientsOther), []string{node.ID, clientConnectionOther})
+		}
 
 		idLabel := []string{node.ID}
 		sendMetric(ch, loadAvgDesc, node.LoadAvg, idLabel)
